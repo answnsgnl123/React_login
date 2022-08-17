@@ -1,4 +1,6 @@
 const db = require('../../config/db');
+const jwt = require('jsonwebtoken');
+
 
 const get_api = {
   register : (req,res) =>{
@@ -44,40 +46,70 @@ const post_api = {
     },
 
     login : (req,res) => {
-      let login_sql ="select user_id, user_password  from user where user_id= ? and user_password = ?";
+      let login_sql ="select user_id, user_password  from user where user_id= ?";
 
       let id = req.body.id;
       let psword = req.body.password;
       let params_login = [id,psword] 
     
       
-    
-      const pr = new Promise((resolve,reject)=>{
-        db.query(login_sql,params_login ,(err,data) =>{
-          if (data[0] !== undefined){
+      db.query(login_sql,id,(err,data)=>{
+        console.log(data[0]);
+        // console.log(err);
+       
+        // res.json({ ok : "test"});
+        
+        if(data[0]){
+          if(id === data[0].user_id && psword == data[0].user_password){
+
+            const token = jwt.sign({id}, "jwtSecret", {
+              expiresIn : 300,
+              issuer : "admin",
+            })
+
+           
+            return  res.json({auth : true, token : token , message : 'token create'})
+          } 
+          return res.json({ok : "password false"})
+        }
+        if(!data[0]){
+          return res.json({ define : "no id"});
+        }
+
+        // 
+        //   if(id === null) return res.json({ ok : "nope id"}) 
+        //    else if(id === data[0].user_id){
             
-            resolve(data);
-            // res.json(data);
-            console.log("input data :",data[0].user_id);
+        //    }
+
+
+      })
+    //   const pr = new Promise((resolve,reject)=>{
+    //     db.query(login_sql,params_login ,(err,data) =>{
+    //       if (data[0] !== undefined){
+            
+    //         resolve(data);
+    //         // res.json(data);
+    //         console.log("input data :",data[0].user_id);
           
-          } else{
-            reject(err);
-            console.log("err massge :",err);
-          }
-        })
-      })
+    //       } else{
+    //         reject(err);
+    //         console.log("err massge :",err);
+    //       }
+    //     })
+    //   })
       
-      pr.then((resuit)=>{
-        console.log('res data :',resuit[0].user_password);
-        if(resuit[0].user_id !== null && resuit[0].user_password !== null){
-          console.log('suceess')
-          // const accessToken = sign({id: id},"important")
-          return res.json({suceess : true});
-        } 
-      }, (reject)=> {
-        console.log(reject)
-        res.json({ suceess : false});
-      })
+    //   pr.then((resuit)=>{
+    //     console.log('res data :',resuit[0].user_password);
+    //     if(resuit[0].user_id !== null && resuit[0].user_password !== null){
+    //       console.log('suceess')
+    //       // const accessToken = sign({id: id},"important")
+    //       return res.json({suceess : true});
+    //     } 
+    //   }, (reject)=> {
+    //     console.log(reject)
+    //     res.json({ suceess : false});
+    //   })
     }
 }
 

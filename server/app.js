@@ -23,6 +23,5 @@ app.listen(PORT, ()=>{
   console.log("server start",PORT);
 });
 
-console.log('git test');
 
 module.exports = app;
